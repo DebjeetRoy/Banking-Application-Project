@@ -46,14 +46,20 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     *
+     * @param http
+     * @return SecurityFilterChain
+     * @implNote First provide those URLs details which has permit all access and then we can have role based access for certain URLs
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
+                                .requestMatchers("/v3/api-docs/**").permitAll() // Allow all users to access "/v3/api-docs"
+                                .requestMatchers("/actuator/**").permitAll() // Allow all users to access Actuator endpoints
                                 .requestMatchers(HttpMethod.POST).hasRole("ADMIN") // Restrict POST to ADMIN role
                                 .requestMatchers(HttpMethod.GET).hasRole("USER") // Restrict GET to USER role
-                                .requestMatchers("/actuator/**").permitAll() // Allow ADMIN access to Actuator endpoints
-                                .requestMatchers("/v3/api-docs/**").permitAll() // Allow all users to access "/v3/api-docs"
                                 .anyRequest().authenticated()) // All other requests require authentication
                 .httpBasic(withDefaults()) // Use basic authentication
                 .csrf(csrf -> csrf.disable()).build(); // Disable CSRF protection
